@@ -33,6 +33,29 @@ func GetAll(c *gin.Context) {
 	})
 }
 
+func Create(c *gin.Context) {
+	var data Todo
+
+	if err := c.ShouldBindJSON(&data); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	todo := Todo{Content: data.Content}
+	result := db.Create(&todo)
+
+	if result.Error != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": result.Error.Error(),
+		})
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "create new",
+		"data":    todo,
+	})
+}
+
 var db *gorm.DB
 
 func main() {
@@ -60,6 +83,8 @@ func main() {
 	})
 
 	r.GET("/todos", GetAll)
+
+	r.POST("/todos", Create)
 
 	fmt.Println("Database connection and setup successful")
 	r.Run()
