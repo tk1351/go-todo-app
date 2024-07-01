@@ -91,6 +91,37 @@ func Update(c *gin.Context) {
 	})
 }
 
+func Delete(c *gin.Context) {
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID"})
+		return
+	}
+
+	var todo Todo
+	result := db.First(&todo, id)
+
+	if result.Error != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": result.Error.Error(),
+		})
+		return
+	}
+
+	result = db.Delete(&todo, id)
+	if result.Error != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": result.Error.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "deleted project",
+		"data":    todo,
+	})
+}
+
 var db *gorm.DB
 
 func main() {
@@ -122,6 +153,8 @@ func main() {
 	r.POST("/todos", Create)
 
 	r.PUT("/todos/:id", Update)
+
+	r.DELETE("/todos/:id", Delete)
 
 	fmt.Println("Database connection and setup successful")
 	r.Run()
