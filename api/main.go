@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
@@ -56,6 +57,40 @@ func Create(c *gin.Context) {
 	})
 }
 
+func Update(c *gin.Context) {
+	id, err := strconv.Atoi(c.Param("id"))
+
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID"})
+		return
+	}
+
+	var payload Todo
+
+	if err := c.ShouldBindJSON(&payload); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request payload"})
+		return
+	}
+
+	var todo Todo
+	result := db.First(&todo, id)
+
+	if result.Error != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": result.Error.Error(),
+		})
+		return
+	}
+
+	todo.Content = payload.Content
+	db.Save(&todo)
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "update project",
+		"data":    todo,
+	})
+}
+
 var db *gorm.DB
 
 func main() {
@@ -85,6 +120,8 @@ func main() {
 	r.GET("/todos", GetAll)
 
 	r.POST("/todos", Create)
+
+	r.PUT("/todos/:id", Update)
 
 	fmt.Println("Database connection and setup successful")
 	r.Run()
