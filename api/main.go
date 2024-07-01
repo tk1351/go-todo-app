@@ -86,7 +86,7 @@ func Update(c *gin.Context) {
 	db.Save(&todo)
 
 	c.JSON(http.StatusOK, gin.H{
-		"message": "update project",
+		"message": "update todo",
 		"data":    todo,
 	})
 }
@@ -117,7 +117,7 @@ func Delete(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"message": "deleted project",
+		"message": "deleted todo",
 		"data":    todo,
 	})
 }
